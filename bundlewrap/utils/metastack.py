@@ -1,4 +1,4 @@
-from bundlewrap.exceptions import MetadataUnavailable
+from ..exceptions import MetadataUnavailable
 from ..metadata import METADATA_TYPES, deepcopy_metadata, validate_metadata, value_at_key_path
 from .dicts import ATOMIC_TYPES, map_dict_keys, merge_dict
 

@@ -28,10 +28,13 @@ class MetadataUnavailable(BundlewrapError):
         if path is None:
             path = {}
         self.path = path
-        super().__init__(f"Metadata key path unavailable: {'/'.join(self.path)}")
+        #super().__init__(f"Metadata key path unavailable: {'/'.join(self.path)}")
 
-    pass
-
+    def __str__(self):
+        return f"path: {'/'.join(self.path)}"
+    
+    def __repr__(self):
+        return f"<MetadataUnavailable path={'/'.join(self.path)}>"
 
 class GracefulApplyException(BundlewrapError):
     """
@@ -88,7 +91,6 @@ class NoSuchTarget(BundlewrapError):
 
     def __str__(self):
         return self.target
-    pass
 
 
 class RemoteException(BundlewrapError):

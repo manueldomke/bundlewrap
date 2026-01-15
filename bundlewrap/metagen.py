@@ -91,7 +91,7 @@ class PathSet:
         """
         try:
             return self._covers_cache[candidate_path]
-        except (KeyError, MetadataUnavailable):
+        except KeyError:
             result = False
             for existing_path in self._paths:
                 if list_starts_with(candidate_path, existing_path):
@@ -262,15 +262,15 @@ class MetadataGenerator:
                 break
             elif only_keyerrors:
                 if set(self._reactors_triggered.keys()).difference(reactors_run):
-                    io.debug("all reactors raised MetadataUnavailables, but new ones were triggered")
+                    io.debug("all reactors raised MetadataUnavailable, but new ones were triggered")
                 else:
-                    io.debug("reactor run completed, all threw MetadataUnavailables")
+                    io.debug("reactor run completed, all threw MetadataUnavailable")
                     break
             io.debug("reactor run completed, rerunning relevant reactors")
 
         if self._reactors_with_keyerrors:
             msg = _(
-                "These metadata reactors raised a MetadataUnavailable "
+                "These metadata reactors raised MetadataUnavailable "
                 "even after all other reactors were done:"
             )
             for source, path_exc in sorted(self._reactors_with_keyerrors.items()):
@@ -372,7 +372,7 @@ class MetadataGenerator:
             yield (
                 reactor_id,
                 f"running reactor {reactor_id} because "
-                f"it previously raised a MetadataUnavailable for: {path_exc[0]}"
+                f"it previously raised MetadataUnavailable for: {path_exc[0]}"
             )
 
     def __run_reactors(self):
@@ -404,7 +404,7 @@ class MetadataGenerator:
 
         return reactors_run, only_keyerrors
 
-    def __run_reactor(self, node, reactor_name, reactor): #skipcq: PY-R1000
+    def __run_reactor(self, node, reactor_name, reactor):  # skipcq: PY-R1000
         # make sure the reactor doesn't react to its own output
         old_metadata = node.metadata._metastack.pop_layer(1, reactor_name)
         self._in_a_reactor = True
@@ -414,16 +414,6 @@ class MetadataGenerator:
         self._reactor_runs[self._current_reactor] += 1
         try:
             new_metadata = reactor(node.metadata)
-        except KeyError as exc:
-            io.stderr(_(
-                "{x} KeyError while executing metadata reactor "
-                "{metaproc} for node {node}:"
-            ).format(
-                x=red("!!!"),
-                metaproc=reactor_name,
-                node=node.name,
-            ))
-            raise exc
         except MetadataUnavailable as exc:
             if self._current_reactor not in self._reactors_with_keyerrors:
                 self._reactors_with_keyerrors[self._current_reactor] = (
@@ -513,3 +503,4 @@ class MetadataGenerator:
                 self._reactors_triggered[triggered_reactor].add(self._current_reactor)
         else:
             io.debug(f"{self._current_reactor} returned same result")
+            
